@@ -2,19 +2,24 @@ name: Enforce Feature Branch Merge
 
 on:
   pull_request:
+    branches:
+      - main
 
 jobs:
   check-branch-name:
     runs-on: ubuntu-latest
     steps:
-      - name: Ensure branch name starts with 'feature_'
+      - name: Check if source branch starts with 'feature'
         run: |
           echo "Checking branch name..."
-          BRANCH_NAME=${{ github.head_ref }}
-          echo "Branch Name is: $BRANCH_NAME"
-          if [[ ! "$BRANCH_NAME" =~ ^feature_.*$ ]]; then
-            echo "ERROR: Branch name '$BRANCH_NAME' does not start with 'feature_'."
+          BRANCH_NAME="${{ github.head_ref }}"
+          BASE_BRANCH="${{ github.base_ref }}"
+          echo "Source Branch: $BRANCH_NAME"
+          echo "Target Branch: $BASE_BRANCH"
+          
+          if [[ "$BASE_BRANCH" == "main" && ! "$BRANCH_NAME" =~ ^feature(_.*)?$ ]]; then
+            echo "❌ ERROR: Only branches starting with 'feature' can be merged into 'main'."
             exit 1
           else
-            echo "Branch name is valid: '$BRANCH_NAME'."
+            echo "✅ Branch name check passed."
           fi
